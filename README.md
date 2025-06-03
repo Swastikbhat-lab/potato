@@ -1,8 +1,8 @@
 # 3D Chess with Learning AI
 
-This project contains a minimal Python implementation of a 3D chess game with an
-AI opponent that learns from previous games. The visuals are rendered using
-`pyglet` and the chess logic is powered by `python-chess`.
+This project contains a tiny Python implementation of a 3D‑inspired chess
+variant with an AI opponent that learns from previous games.  It avoids any
+external dependencies so it can run in restricted environments.
 
 **Note:** This is a simplified example and does not represent a complete chess
 engine or sophisticated machine learning. The AI records game results and
@@ -10,11 +10,8 @@ adjusts move selection based on past experience.
 
 ## Requirements
 
-Install dependencies using `pip`:
-
-```bash
-pip install -r requirements.txt
-```
+The game only requires the Python standard library.  No additional packages are
+needed.
 
 ## Running the Game
 
@@ -24,8 +21,9 @@ Execute the game from the repository root:
 python -m 3d_chess.game
 ```
 
-The game window displays a basic 3D board. Use your mouse to select and move
-pieces. The AI will make a move after each of yours.
+The program prints the board layer by layer in the console.  Enter moves as six
+space separated numbers representing the source and destination coordinates
+``x1 y1 z1 x2 y2 z2``.  The AI will answer with its own move.
 
 Saved game data is stored in `ai_memory.json`. Deleting this file resets the AI
 learning state.

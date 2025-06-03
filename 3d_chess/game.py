@@ -1,52 +1,62 @@
-"""Main game loop."""
 
-import sys
-import pyglet
-import chess
-from pyglet.window import key
+"""Simplified console based game loop."""
 
-from .board import Board
+from __future__ import annotations
+
+from typing import List
+
+from .board import Board, Move
 from .ai import LearningAI
-from .view import ChessView
 
 
-def run():
+def parse_move(text: str) -> Move:
+    """Convert ``"x1 y1 z1 x2 y2 z2"`` into a move tuple."""
+    parts = text.strip().split()
+    if len(parts) != 6:
+        raise ValueError("Move must have six numbers")
+    nums = list(map(int, parts))
+    return (nums[0], nums[1], nums[2]), (nums[3], nums[4], nums[5])
+
+
+def run() -> None:
     board = Board()
     ai = LearningAI()
-    view = ChessView()
-    moves_san = []
+    moves: List[str] = []
+    turn = "white"
 
-    @view.event
-    def on_draw():
-        view.clear()
-        view.setup_3d()
-        view.draw_board()
+    while not board.is_game_over():
+        print(board)
+        if turn == "white":
+            try:
+                raw = input("Your move (x1 y1 z1 x2 y2 z2 or 'quit'): ")
+            except EOFError:
+                break
+            if raw.lower().strip() == "quit":
+                print("Game aborted")
+                return
+            try:
+                move = parse_move(raw)
+            except Exception as exc:
+                print(f"Invalid move: {exc}")
+                continue
+            if move not in board.legal_moves(turn):
+                print("Illegal move")
+                continue
+            board.move_piece(*move)
+            moves.append(board.move_to_str(move))
+        else:
+            move = ai.choose_move(board, turn)
+            board.move_piece(*move)
+            print(f"AI moves {board.move_to_str(move)}")
+            moves.append(board.move_to_str(move))
 
-    @view.event
-    def on_key_press(symbol, modifiers):
-        if symbol == key.ESCAPE:
-            pyglet.app.exit()
+        turn = "black" if turn == "white" else "white"
 
-    def ai_move():
-        if board.is_game_over():
-            return
-        move = ai.choose_move(board.board)
-        board.push(move)
-        moves_san.append(board.board.san(move))
-        if board.is_game_over():
-            ai.record_result(moves_san, board.result())
+    print(board)
+    result = board.result()
+    ai.record_result(moves, result)
+    print("Game over:", result)
 
-    def on_user_move(move: chess.Move):
-        board.push(move)
-        moves_san.append(board.board.san(move))
-        ai_move()
-
-    # TODO: user move selection via mouse - simplified placeholder
-    def update(dt):
-        pass
-
-    pyglet.clock.schedule_interval(update, 1/60)
-    pyglet.app.run()
 
 if __name__ == "__main__":
     run()
